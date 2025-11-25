@@ -26,7 +26,7 @@ git clone -b ros2 https://github.com/tylerjw/serial.git
 克隆本驱动:
 code
 Bash
-git clone <你的仓库地址>
+git clone https://github.com/litiansuo1145/imu_yzf143_ros2.git
 编译:
 code
 Bash
@@ -55,4 +55,5 @@ ros2 run imu_yzf143_ros2 imu_node --ros-args -p port:=/dev/ttyUSB1 -p baud:=1152
 /imu_data (sensor_msgs/msg/Imu): 包含姿态(四元数)、角速度和线加速度。
 坐标系
 frame_id: 默认为 imu_link (可通过参数修改)。
-遵循右手定则，ENU 坐标系。
+
+遵循右手定则，ENU 坐标系。给我的readme改为标准markdown格式
