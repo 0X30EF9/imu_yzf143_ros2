@@ -1,7 +1,3 @@
-/*
- * ROS 2 Driver for ZYF176/ZYF143 - Robust Production Version
- * 增加了异常捕获和心跳监测
- */
 #include <chrono>
 #include <memory>
 #include <string>
@@ -57,28 +53,26 @@ public:
             ser_.open();
         } catch (serial::IOException &e) {
             RCLCPP_ERROR(this->get_logger(), "Failed to open port: %s", e.what());
-            // 这里不return，让定时器继续尝试重连（如果需要更高级逻辑可修改）
+            // 这里不return，让定时器继续尝试重连
         }
 
         if (ser_.isOpen()) {
             RCLCPP_INFO(this->get_logger(), "Port Opened Successfully!");
         }
 
-        // 定时器：读取数据 (50Hz - 20ms，与你调试版一致)
         timer_ = this->create_wall_timer(
             20ms, std::bind(&ImuNode::timer_callback, this));
             
-        // 心跳定时器：每 5 秒打印一次状态，防止“假死”不知道原因
+
         heartbeat_timer_ = this->create_wall_timer(
             5s, std::bind(&ImuNode::heartbeat_callback, this));
     }
 
 private:
     void timer_callback() {
-        // 【关键】增加 try-catch，防止 USB 波动导致节点崩溃假死
         try {
             if (!ser_.isOpen()) {
-                // 如果串口掉了，尝试重连（可选，这里简单处理为返回）
+             
                 return;
             }
 
@@ -95,27 +89,24 @@ private:
                 // 检查头 A5 A5
                 if (buffer_[0] == 0xA5 && buffer_[1] == 0xA5) {
                     
-                    // 拷贝数据
+                    
                     for (int i = 0; i < 22; i++) {
                         analysis_.readBuffer[i] = buffer_[i + 2];
                     }
-
-                    // 校验
                     if (check_crc()) {
                         publish_imu_msg();
-                        packet_count_++; // 统计收包数量
+                        packet_count_++; 
                         buffer_.erase(buffer_.begin(), buffer_.begin() + 24);
                     } else {
                         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, 
                             "CRC Fail. Expected: %d, Calc: %d", analysis_.param.crc, calculate_sum());
-                        buffer_.erase(buffer_.begin()); // 错位，滑一个字节
+                        buffer_.erase(buffer_.begin()); 
                     }
                 } else {
                     buffer_.erase(buffer_.begin());
                 }
             }
             
-            // 防止缓存溢出 (比如波特率错全是乱码)
             if (buffer_.size() > 2048) {
                 buffer_.clear();
                 RCLCPP_WARN(this->get_logger(), "Buffer overflow, cleared.");
@@ -124,25 +115,24 @@ private:
         } catch (const serial::IOException& e) {
             RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, 
                 "Serial Port Error (Cable loose?): %s", e.what());
-            // 可以在这里写尝试 ser_.close() 然后重连的逻辑
             try { ser_.close(); } catch(...) {}
         } catch (...) {
             RCLCPP_ERROR(this->get_logger(), "Unknown Error in timer loop!");
         }
     }
 
-    // 心跳回调：每5秒告诉你它还活着
+
     void heartbeat_callback() {
         if (!ser_.isOpen()) {
             RCLCPP_WARN(this->get_logger(), "Status: Port Closed!");
         } else if (packet_count_ == 0) {
             RCLCPP_WARN(this->get_logger(), "Status: Port Open, BUT NO DATA received yet.");
         } else {
-            // 正常情况下，这里不打印，保持安静。
-            // 只有当你想调试时，可以把下面这行解开：
+           
+            // 调试打印
             // RCLCPP_INFO(this->get_logger(), "Status: OK. Packets received: %lu", packet_count_);
         }
-        // 重置计数（可选，看你统计需求，这里我们一直累加）
+       
     }
 
     int16_t calculate_sum() {
@@ -175,7 +165,7 @@ private:
         msg.orientation.z = q.z();
         msg.orientation.w = q.w();
 
-        // 填充协方差 (防止 EKF 报错 Covariance is zero)
+        // 填充协方差 
         msg.orientation_covariance[0] = 1e-6;
         msg.orientation_covariance[4] = 1e-6;
         msg.orientation_covariance[8] = 1e-6;
@@ -215,3 +205,4 @@ int main(int argc, char **argv) {
     rclcpp::shutdown();
     return 0;
 }
+
