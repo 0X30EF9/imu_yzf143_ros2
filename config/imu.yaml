@@ -1,0 +1,13 @@
+imu_yzf143_node:
+  ros__parameters:
+    port: /dev/ttyUSB0
+    baud: 115200
+    frame_id: imu_link
+    poll_interval_ms: 5
+    serial_timeout_ms: 5
+    reconnect_interval_ms: 1000
+    data_timeout_ms: 1000
+    # Each array supplies x/y/z diagonal variances. All zeros mean unknown.
+    orientation_variance: [0.0, 0.0, 0.0]
+    angular_velocity_variance: [0.0, 0.0, 0.0]
+    linear_acceleration_variance: [0.0, 0.0, 0.0]

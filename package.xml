@@ -3,17 +3,26 @@
 <package format="3">
   <name>imu_yzf143_ros2</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>ROS 2 serial driver for ZYF176 and ZYF143 inertial measurement units</description>
   <maintainer email="dongzhengyang114@gmail.com">nvidia</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rcl_interfaces</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
-  <depend>tf2_geometry_msgs</depend>
   <depend>serial</depend>  
+
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
@@ -22,3 +31,4 @@
     <build_type>ament_cmake</build_type>
   </export>
 </package>
+
